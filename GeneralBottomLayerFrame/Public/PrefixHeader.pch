@@ -1,0 +1,145 @@
+//
+//  PrefixHeader.pch
+//  GeneralBottomLayerFrame
+//
+//  Created by jimmy on 2018/8/16.
+//  Copyright © 2018年 jimmy. All rights reserved.
+//
+
+#ifndef PrefixHeader_pch
+#define PrefixHeader_pch
+
+//屏幕Frame相关
+#define IS_iPhoneX ([UIScreen mainScreen].bounds.size.width == 375 && [UIScreen mainScreen].bounds.size.height == 812)
+//判断iphoneX
+#define iPhoneX ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(1125, 2436), [[UIScreen mainScreen] currentMode].size) : NO)
+
+#define STATUS_BAR_HEIGHT               (IS_iPhoneX ? 44.0f : 20.0f)
+#define NAVIGATION_BAR_HEIGHT           (IS_iPhoneX ? 88.0f : 64.0f)
+#define TAB_BAR_HEIGHT                  (IS_iPhoneX ? 83.0f : 49.0f)
+#define NAV_HEIGHT           (IS_iPhoneX ? 68.0f : 44.0f)
+#define APP_STATUSBAR_HEIGHT ((iPhoneX) ? 44 : 20) //如果显示则高度为20 否则为0
+
+#define SCREEN_WIDTH    ([UIScreen mainScreen].bounds.size.width)
+#define SCREEN_HEIGHT   ([UIScreen mainScreen].bounds.size.height)
+
+#define ScreenX375(x)   (x) * SCREEN_WIDTH / 375
+#define ScreenY375(y)   y * SCREEN_HEIGHT / 375
+
+#define MinX(v)                 CGRectGetMinX((v).frame)
+#define MinY(v)                 CGRectGetMinY((v).frame)
+
+#define MidX(v)                 CGRectGetMidX((v).frame)
+#define MidY(v)                 CGRectGetMidY((v).frame)
+
+#define MaxX(v)                 CGRectGetMaxX((v).frame)
+#define MaxY(v)                 CGRectGetMaxY((v).frame)
+
+#define VERSION    [[[NSBundle mainBundle] infoDictionary] valueForKey:@"CFBundleShortVersionString"]
+#define kAppDelegate        ((AppDelegate *)[[UIApplication sharedApplication] delegate])
+#define kKeyWindow          [[UIApplication sharedApplication] keyWindow]
+#define kUserDefaults       [NSUserDefaults standardUserDefaults]
+#define kNotificationCenter [NSNotificationCenter defaultCenter]
+
+
+//字体和颜色，图片
+#define Kfont(f)   [UIFont systemFontOfSize:ScreenX375(f)]
+#define KBlodfont(f)   [UIFont fontWithName:@"PingFangSC-Semibold" size:ScreenX375(f)]
+#define Ffont(f)   [UIFont fontWithName:@"MicrosoftYaHei" size:(f)];
+#define ImageWithName(s)   [UIImage imageNamed:s]
+
+#define RGBACOLOR(r,g,b,a)            [UIColor colorWithRed:r/256.0 green:g/256.0 blue:b/256.0 alpha:a]
+#define REXADECIMALCOLOR(str)         [UIColor colorWithHexString:str]
+#define ThemeColor                    [UIColor colorWithRed:126/256.0 green:215/256.0 blue:212/256.0 alpha:1]
+#define FONTCOLOR_BLACK               REXADECIMALCOLOR(@"#333333")
+#define FONTCOLOR_GRAY                REXADECIMALCOLOR(@"#666666")
+#define FONTCOLOR_LIGHTGRAY           REXADECIMALCOLOR(@"#999999")
+
+#define TABLEVIEW_BACKGROUNDCOLOR     REXADECIMALCOLOR(@"#eeeeee")
+#define LineColor                     REXADECIMALCOLOR(@"#dcdcdc")
+
+#define UIColorFromRGB(rgbValue,A) [UIColor colorWithHexString:rgbValue alpha:A]
+#define HeaderColor                    RGBACOLOR(237,34,59,1)
+
+//获取文字高度
+#define kGetStringHeight(string,maxSize,font) [(string) boundingRectWithSize:(maxSize) options:NSStringDrawingUsesFontLeading | NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:(font)} context:nil].size.height
+#define kGetStringWidth(string,maxSize,font) [(string) boundingRectWithSize:(maxSize) options:NSStringDrawingUsesFontLeading | NSStringDrawingUsesLineFragmentOrigin attributes:@{NSFontAttributeName:(font)} context:nil].size.width
+
+//获取沙盒Document路径
+#define kDocumentPath [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject]
+//获取沙盒temp路径
+#define kTempPath NSTemporaryDirectory()
+//获取沙盒Cache路径
+#define kCachePath [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) firstObject]
+
+#define kSofterViewsion  [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"]
+
+//开发的时候打印，但是发布的时候不打印的NSLog
+#ifdef DEBUG
+#define NSLog(...) NSLog(@"%s 第%d行 \n %@\n\n",__func__,__LINE__,[NSString stringWithFormat:__VA_ARGS__])
+#else
+#define NSLog(...)
+#endif
+
+//[NSUserDefaults standardUserDefaults]
+#define kNSUDefaultSaveVauleAndKey(value,key) [[NSUserDefaults standardUserDefaults] setObject:value forKey:key]
+#define kNSUDefaultReadKey(key) [[NSUserDefaults standardUserDefaults] valueForKey:key]
+
+// 弱引用
+#define WeakObj(o) __weak typeof(o) o##Weak = o
+
+/// 随机色
+#define Testrandom(r, g, b, a) [UIColor colorWithRed:(r)/255.0 green:(g)/255.0 blue:(b)/255.0 alpha:(a)/255.0]
+#define TestrandomColor Testrandom(arc4random_uniform(256), arc4random_uniform(256), arc4random_uniform(256), arc4random_uniform(256))
+
+#define  Ad_url  @"http://mobads.baidu.com/cpro/ui/mads.php"
+
+#define code2  @"phcqnauGuHYkFMRquANhmgN_IauBThfqmgKsUARhIWdGULPxnz3vndtkQW08nau_I1Y1P1Rhmhwz5Hb8nBuL5HDknWRhTA_qmvqVQhGGUhI_py4MQhF1TvChmgKY5H6hmyPW5RFRHzuET1dGULnhuAN85HchUy7s5HDhIywGujY3P1n3mWb1PvDLnvF-Pyf4mHR4nyRvmWPBmhwBPjcLPyfsPHT3uWm4FMPLpHYkFh7sTA-b5yRzPj6sPvRdFhPdTWYsFMKzuykEmyfqnauGuAu95Rnsnbfknbm1QHnkwW6VPjujnBdKfWD1QHnsnbRsnHwKfYwAwiu9mLfqHbD_H70hTv6qnHn1PauVmynqnjclnj0lnj0lnj0lnj0lnj0hThYqniuVujYkFhkC5HRvnB3dFh7spyfqnW0srj64nBu9TjYsFMub5HDhTZFEujdzTLK_mgPCFMP85Rnsnbfknbm1QHnkwW6VPjujnBdKfWD1QHnsnbRsnHwKfYwAwiuBnHfdnjD4rjnvPWYkFh7sTZu-TWY1QW68nBuWUHYdnHchIAYqPHDzFhqsmyPGIZbqniuYThuYTjd1uAVxnz3vnzu9IjYzFh6qP1RsFMws5y-fpAq8uHT_nBuYmycqnau1IjYkPjRsnHb3n1mvnHDkQWD4niuVmybqniu1uy3qwD-HQDFKHakHHNn_HR7fQ7uDQ7PcHzkHiR3_RYqNQD7jfzkPiRn_wdKHQDP5HikPfRb_fNc_NbwPQDdRHzkDiNchTvwW5HnvPj0zQWndnHRvnBsdPWb4ri3kPW0kPHmhmLnqPH6LP1ndm1-WPyDvnHKBrAw9nju9PHIhmH9WmH6zrjRhTv7_5iu85HDhTvd15HDhTLTqP1RsFh4ETjYYPW0sPzuVuyYqn1mYnjc8nWbvrjTdQjRvrHb4QWDvnjDdPBuk5yRzPj6sPvRdgvPsTBu_my4bTvP9TARqnam"
+
+
+#ifdef __OBJC__
+
+#pragma mark - 头文件
+#import <YYKit.h>
+#import "EnumHeader.h"
+#import "FrameHeader.h"
+#import "DefineHeader.h"
+#import <UIKit/UIKit.h>
+#import "HandelTools.h"
+#import "JXCategoryView.h"
+#import "UIViewController+Extension.h"
+
+//Controller
+#import "BaseTabBarController.h"
+#import "BaseNavController.h"
+#import "BaseNavigationController.h"
+#import "HomeViewController.h"
+#import "CenterViewController.h"
+#import "OtherViewController.h"
+#import "MineViewController.h"
+#import "ADViewController.h"
+
+//View
+#import "BaseTableView.h"
+
+
+//Other
+#import "ToolClass.h"
+#import "HttpManager.h"
+#import "Masonry.h"
+#import "MJRefresh.h"
+#import "UIImageView+WebCache.h"
+//#import "GKCover.h"
+#import "UIView+Utils.h"
+#import "UIColor+Hex.h"
+#import "UIImage+NotRenderImage.h"
+#import "UIBarButtonItem+BarItem.h"
+
+//三方
+#import "ReactiveObjC.h"
+
+#endif
+
+#endif /* PrefixHeader_pch */
+
+

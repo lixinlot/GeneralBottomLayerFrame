@@ -1,0 +1,6 @@
+framework module Pods_GeneralBottomLayerFrame {
+  umbrella header "Pods-GeneralBottomLayerFrame-umbrella.h"
+
+  export *
+  module * { export * }
+}

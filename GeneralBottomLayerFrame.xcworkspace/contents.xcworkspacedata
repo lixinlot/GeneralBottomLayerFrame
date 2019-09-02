@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:GeneralBottomLayerFrame.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Pods/Pods.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:/Users/jimmy/Desktop/&#x793a;&#x4f8b;/Lixinlot&#x7ec3;&#x4e60;/GeneralBottomLayerFrame/GeneralBottomLayerFrame.xcodeproj">
+   </FileRef>
+</Workspace>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14460.32" systemVersion="17G65" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+    <entity name="Student1" representedClassName="Student1" syncable="YES" codeGenerationType="class">
+        <attribute name="age1" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="name1" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="num1" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="sex1" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="student1" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Student1" inverseName="student1" inverseEntity="Student1" syncable="YES"/>
+    </entity>
+    <entity name="Student2" representedClassName="Student2" syncable="YES" codeGenerationType="class">
+        <attribute name="age2" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="name2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="num2" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sex2" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Student3" representedClassName="Student3" syncable="YES" codeGenerationType="class">
+        <attribute name="age3" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="name3" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="num3" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="sex3" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Student4" representedClassName="Student4" syncable="YES" codeGenerationType="class">
+        <attribute name="age4" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="name4" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="num4" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="sex4" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Student1" positionX="-63" positionY="-18" width="128" height="120"/>
+        <element name="Student2" positionX="-54" positionY="-9" width="128" height="105"/>
+        <element name="Student3" positionX="-36" positionY="9" width="128" height="105"/>
+        <element name="Student4" positionX="-18" positionY="27" width="128" height="105"/>
+    </elements>
+</model>
