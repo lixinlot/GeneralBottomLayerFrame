@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0930"
+   LastUpgradeVersion = "1100"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,10 +14,10 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0408B990B0E50C4028BC69BCB6537EAF"
+               BlueprintIdentifier = "66EF777DAC384165A40F94DC7D0BD98F"
+               BuildableName = "libSJUIKit.a"
                BlueprintName = "SJUIKit"
-               ReferencedContainer = "container:Pods.xcodeproj"
-               BuildableName = "libSJUIKit.a">
+               ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>

@@ -40,13 +40,13 @@ static SJEdgeControlButtonItemTag SJBottomItem_LeftFill = 4;
 static SJEdgeControlButtonItemTag SJBottomItem_RightFill = 5;
 
 @interface SJFilmEditingInGIFRecordingsControlLayer ()
+@property (nonatomic, weak, nullable) __kindof SJBaseVideoPlayer *player;
 @property (nonatomic, strong, readonly) SJFilmEditingSettingsUpdatedObserver *settingsUpdatedObserver;
 @property (nonatomic, strong, readonly) SJFilmEditingButtonContainerView *backButtonContainerView;
 @property (nonatomic, strong, readonly) SJFilmEditingGIFCountDownView *countDownView;
 @property (nonatomic, strong, nullable) NSTimer *countDownTimer;
 @property (nonatomic) NSInteger countDownNum;
 @property (nonatomic, readonly) NSInteger maxCountDownNum;
-@property (nonatomic, weak, nullable) SJBaseVideoPlayer *player;
 @property (nonatomic) SJFilmEditingStatus status;
 
 @property (nonatomic) CMTime start;
@@ -344,7 +344,7 @@ static SJEdgeControlButtonItemTag SJBottomItem_RightFill = 5;
 - (void)controlLayerNeedAppear:(__kindof SJBaseVideoPlayer *)videoPlayer { /* nothing */ }
 - (void)controlLayerNeedDisappear:(__kindof SJBaseVideoPlayer *)videoPlayer { /* nothing */ }
 
-- (void)appDidBecomeActive:(__kindof SJBaseVideoPlayer *)videoPlayer {
+- (void)receivedApplicationDidBecomeActiveNotification:(__kindof SJBaseVideoPlayer *)videoPlayer {
     if ( self.status == SJFilmEditingStatus_Paused ) {
         [videoPlayer play];
     }

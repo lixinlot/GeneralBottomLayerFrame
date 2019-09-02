@@ -339,7 +339,7 @@ static NSInteger isNotchedScreen = -1;
                  */
                 SEL peripheryInsetsSelector = NSSelectorFromString([NSString stringWithFormat:@"_%@%@", @"periphery", @"Insets"]);
                 UIEdgeInsets peripheryInsets = UIEdgeInsetsZero;
-                [[UIScreen mainScreen] qmui_performSelector:peripheryInsetsSelector withReturnValue:&peripheryInsets];
+                [[UIScreen mainScreen] qmui_performSelector:peripheryInsetsSelector withPrimitiveReturnValue:&peripheryInsets];
                 if (peripheryInsets.bottom <= 0) {
                     UIWindow *window = [[UIWindow alloc] initWithFrame:UIScreen.mainScreen.bounds];
                     peripheryInsets = window.safeAreaInsets;
@@ -627,6 +627,13 @@ static NSInteger isHighPerformanceDevice = -1;
 @end
 
 @implementation QMUIHelper
+
++ (void)load {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [QMUIHelper sharedInstance];// 确保内部的变量、notification 都正确配置
+    });
+}
 
 + (instancetype)sharedInstance {
     static dispatch_once_t onceToken;

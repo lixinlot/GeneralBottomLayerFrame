@@ -9,8 +9,6 @@
 //
 //  Contact:    changsanjiang@gmail.com
 //
-//  QQGroup:    719616775
-//
 
 /**
  ------------------------
@@ -29,19 +27,22 @@
  */
 
 #import <UIKit/UIKit.h>
-#import "SJVideoPlayerPreviewInfo.h"
 #import "SJPrompt.h"
 #import "SJFitOnScreenManagerDefines.h"
 #import "SJRotationManagerDefines.h"
 #import "SJVideoPlayerControlLayerProtocol.h"
 #import "SJControlLayerAppearManagerDefines.h"
 #import "SJFlipTransitionManagerDefines.h"
-#import "SJMediaPlaybackProtocol.h"
+#import "SJMediaPlaybackControllerDefines.h"
 #import "SJVideoPlayerURLAsset+SJAVMediaPlaybackAdd.h"
 #import "SJPlayerGestureControlDefines.h"
 #import "SJDeviceVolumeAndBrightnessManagerDefines.h"
 #import "SJModalViewControlllerManagerDefines.h"
 #import "SJBaseVideoPlayerStatisticsDefines.h"
+#import "SJFloatSmallViewControllerDefines.h"
+#import "SJEdgeFastForwardViewControllerDefines.h"
+#import "SJVideoDefinitionSwitchingInfo.h"
+#import "SJPopPromptControllerProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -52,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // - View -
 
-@property (nonatomic, strong, readonly) UIView *view;
+@property (nonatomic, strong, readonly) __kindof UIView *view;
 @property (nonatomic, strong, null_resettable) AVLayerVideoGravity videoGravity;
 - (nullable __kindof UIViewController *)atViewController;
 
@@ -71,8 +72,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) UIImageView *placeholderImageView;
 
 /// 播放器准备好显示时, 是否隐藏占位图
+///
 /// - 默认为YES
 @property (nonatomic) BOOL hiddenPlaceholderImageViewWhenPlayerIsReadyForDisplay;
+
+/// 将要隐藏 placeholderImageView 时, 延迟多少秒才去隐藏
+///
+/// - 默认为0.8s
+@property (nonatomic) NSTimeInterval delayInSecondsForHiddenPlaceholderImageView;
+
+@property (nonatomic, readonly, getter=isPlaceholderImageViewHidden) BOOL placeholderImageViewHidden;
+
+- (void)showPlaceholderImageView;
+- (void)hiddenPlaceholderImageView;
 @end
 
 
@@ -126,6 +138,7 @@ NS_ASSUME_NONNULL_BEGIN
 // - Asset -
 
 /// 资源
+///
 /// - 播放一个资源
 /// - 使用URL及相关的视图信息进行初始化
 @property (nonatomic, strong, nullable) SJVideoPlayerURLAsset *URLAsset;
@@ -163,14 +176,21 @@ NS_ASSUME_NONNULL_BEGIN
 /// - 如果该block == nil, 则调用`play`时, 默认为执行.
 @property (nonatomic, copy, nullable) BOOL(^canPlayAnAsset)(__kindof SJBaseVideoPlayer *player);
 /// 自动刷新, 播放失败时每隔多少秒刷新一次.
+///
 /// - 默认是0, 即不自动刷新
 /// - 单位是秒
 @property (nonatomic) NSTimeInterval delayToAutoRefreshWhenPlayFailed;
-/// 使播放
-- (void)play;
+
+// - Switch Video Definition -
+
 /// 切换`清晰度` (v1.6.5 新增)
 /// - 切换当前播放的视频清晰度
 - (void)switchVideoDefinition:(SJVideoPlayerURLAsset *)URLAsset;
+
+@property (nonatomic, strong, readonly) SJVideoDefinitionSwitchingInfo *definitionSwitchingInfo;
+
+/// 使播放
+- (void)play;
 
 /// 是否恢复播放, 进入前台时.
 ///
@@ -211,9 +231,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 是否可以调用 seekToTime:
 @property (nonatomic, copy, nullable) BOOL(^canSeekToTime)(__kindof SJBaseVideoPlayer *player);
+
+/// 当跳转完成后, 是否恢复播放
+///
+/// default value is YES
+@property (nonatomic) BOOL resumePlaybackWhenPlayerHasFinishedSeeking;
+
 /// 跳转到指定位置播放
 - (void)seekToTime:(NSTimeInterval)secs completionHandler:(void (^ __nullable)(BOOL finished))completionHandler;
-
+- (void)seekToTime:(CMTime)time toleranceBefore:(CMTime)toleranceBefore toleranceAfter:(CMTime)toleranceAfter completionHandler:(void (^ __nullable)(BOOL finished))completionHandler;
 
 // - Rate -
 
@@ -327,6 +353,15 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - 提示
 
+/// `左下角`弹出提示
+@interface SJBaseVideoPlayer (PopPromptControl)
+
+@property (nonatomic, strong, null_resettable) id<SJPopPromptControllerProtocol> popPromptController;
+
+@end
+
+
+/// `中心`弹出提示
 @interface SJBaseVideoPlayer (Prompt)
 
 /**
@@ -395,7 +430,16 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface SJBaseVideoPlayer (GestureControl)
 
-@property (nonatomic, strong, null_resettable) id<SJPlayerGestureControl> gestureControl;
+/// 在cell中, 允许水平方向触发Pan手势, 默认为不允许
+///
+@property (nonatomic) BOOL allowHorizontalTriggeringOfPanGesturesInCells;
+
+/// 左右快进快退
+///
+/// 默认不启用, 当需要开启时, 请设置`player.fastForwardViewController.enabled = YES;`
+@property (nonatomic, strong, null_resettable) id<SJEdgeFastForwardViewControllerProtocol> fastForwardViewController;
+
+@property (nonatomic, strong, readonly) id<SJPlayerGestureControl> gestureControl;
 
 @property (nonatomic) SJPlayerDisabledGestures disabledGestures;
 
@@ -487,11 +531,6 @@ NS_ASSUME_NONNULL_BEGIN
 // - Rotation -
 
 @interface SJBaseVideoPlayer (Rotation)
-/// Default is SJRotationManager. It only rotates the player view.
-/// When you want to rotate the view controller, You can use the SJVCRotationManager.
-/// 默认情况下, 播放器将只旋转播放界面, ViewController并不会旋转.
-/// 当您想要旋转ViewController时, 可以采用此管理类进行旋转.
-/// - 使用示例请看`SJVCRotationManager`第36行注释。
 @property (nonatomic, strong, null_resettable) id<SJRotationManagerProtocol> rotationManager;
 
 @property (nonatomic, copy, nullable) BOOL(^shouldTriggerRotation)(__kindof SJBaseVideoPlayer *player);
@@ -522,7 +561,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL isTransitioning;
 
 @property (nonatomic) BOOL disableAutoRotation;
-@property (nonatomic) NSTimeInterval rotationTime;
 @property (nonatomic) SJOrientation orientation;
 @property (nonatomic) SJAutoRotateSupportedOrientation supportedOrientation;
 @property (nonatomic, copy, nullable) void(^viewWillRotateExeBlock)(__kindof SJBaseVideoPlayer *player, BOOL isFullScreen);
@@ -555,10 +593,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)screenshotWithTime:(NSTimeInterval)time
                       size:(CGSize)size
                 completion:(void(^)(__kindof SJBaseVideoPlayer *videoPlayer, UIImage * __nullable image, NSError *__nullable error))block;
-
-- (void)generatedPreviewImagesWithMaxItemSize:(CGSize)itemSize
-                                   completion:(void(^)(__kindof SJBaseVideoPlayer *player, NSArray<id<SJVideoPlayerPreviewInfo>> *__nullable images, NSError *__nullable error))block;
-
 @end
 
 
@@ -603,6 +637,17 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - 在`tableView`或`collectionView`上播放
 
 @interface SJBaseVideoPlayer (ScrollView)
+
+/// 小浮窗控制
+///
+/// 默认不启用, 当需要开启时, 请设置`player.floatSmallViewController.enabled = YES;`
+@property (nonatomic, strong, null_resettable) id<SJFloatSmallViewControllerProtocol> floatSmallViewController;
+
+/// 当开启小浮窗控制时, 播放结束后, 会默认隐藏小浮窗
+///
+/// - default value is YES.
+@property (nonatomic) BOOL autoDisappearFloatSmallView;
+
 /// 滚动出去后, 是否暂停. 默认为YES
 ///
 /// - default value is YES.

@@ -10,6 +10,7 @@
 
 #import <UIKit/UIKit.h>
 @protocol SJRotationManagerProtocol, SJRotationManagerObserver;
+@class SJPlayModel;
 /**
  视图方向
  
@@ -18,9 +19,9 @@
  - SJOrientation_LandscapeRight: 全屏, Home键在左侧
  */
 typedef NS_ENUM(NSUInteger, SJOrientation) {
-    SJOrientation_Portrait,
-    SJOrientation_LandscapeLeft,  // UIDeviceOrientationLandscapeLeft
-    SJOrientation_LandscapeRight, // UIDeviceOrientationLandscapeRight
+    SJOrientation_Portrait = UIDeviceOrientationPortrait,
+    SJOrientation_LandscapeLeft = UIDeviceOrientationLandscapeLeft,
+    SJOrientation_LandscapeRight = UIDeviceOrientationLandscapeRight,
 };
 
 /**
@@ -63,10 +64,6 @@ NS_ASSUME_NONNULL_BEGIN
 /// 自动旋转时, 所支持的方法
 /// - 默认为 .all
 @property (nonatomic) SJAutoRotateSupportedOrientation autorotationSupportedOrientation;
-
-/// 动画持续的时间
-/// - 默认是 0.4
-@property (nonatomic) NSTimeInterval duration;
 
 /// 当前的方向
 @property (nonatomic, readonly) SJOrientation currentOrientation;

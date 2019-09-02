@@ -29,16 +29,17 @@
 #import "SJBaseVideoPlayer.h"
 #endif
 
-#if __has_include(<SJUIKit/SJAttributeWorker.h>)
-#import <SJUIKit/SJAttributeWorker.h>
+#if __has_include(<SJUIKit/SJAttributesFactory.h>)
+#import <SJUIKit/SJAttributesFactory.h>
 #else
-#import "SJAttributeWorker.h"
+#import "SJAttributesFactory.h"
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
 static SJEdgeControlButtonItemTag SJTopItem_Back = 1;
 
 @interface SJFilmEditingGenerateResultControlLayer ()
+@property (nonatomic, weak, nullable) __kindof SJBaseVideoPlayer *player;
 @property (nonatomic, strong, readonly) SJFilmEditingSaveResultToAlbumHandler *saveHandler;
 @property (nonatomic, strong, readonly) SJFilmEditingSettingsUpdatedObserver *settingsUpdatedObserver;
 @property (nonatomic, strong, readonly) SJFilmEditingButtonContainerView *backButtonContainerView;
@@ -46,7 +47,6 @@ static SJEdgeControlButtonItemTag SJTopItem_Back = 1;
 
 @property (nonatomic, strong, readonly) UILabel *promptLabel;
 @property (nonatomic, strong, readonly) UIImageView *coverImageView;
-@property (nonatomic, weak, nullable) SJBaseVideoPlayer *player;
 
 @property (nonatomic, strong, nullable) SJVideoPlayerFilmEditingGeneratedResult *result;
 @property (nonatomic, strong, readonly) SJBaseVideoPlayer *exportedVideoPlayer;
@@ -370,11 +370,14 @@ static SJEdgeControlButtonItemTag SJTopItem_Back = 1;
 }
 
 - (void)_updatePromptLabelText:(NSString *)text {
-    _promptLabel.attributedText = sj_makeAttributesString(^(SJAttributeWorker * _Nonnull make) {
+    _promptLabel.attributedText = [NSAttributedString sj_UIKitText:^(id<SJUIKitTextMakerProtocol>  _Nonnull make) {
         make.font([UIFont systemFontOfSize:12]).textColor([UIColor whiteColor]);
         make.append(text);
-        make.shadow(CGSizeMake(0.5, 0.5), 1, [UIColor blackColor]);
-    });
+        make.shadow(^(NSShadow * _Nonnull make) {
+            make.shadowColor = UIColor.blackColor;
+            make.shadowOffset = CGSizeMake(0, 0.5);
+        });
+    }];
 }
 
 - (void)_cancel {
@@ -541,6 +544,7 @@ static SJEdgeControlButtonItemTag SJTopItem_Back = 1;
 - (SJBaseVideoPlayer *)exportedVideoPlayer {
     if ( _exportedVideoPlayer ) return _exportedVideoPlayer;
     _exportedVideoPlayer = [SJBaseVideoPlayer player];
+    _exportedVideoPlayer.pauseWhenAppDidEnterBackground = YES;
     _exportedVideoPlayer.resumePlaybackWhenAppDidEnterForeground = YES;
     _exportedVideoPlayer.view.backgroundColor = [UIColor clearColor];
     for ( UIView *view in _exportedVideoPlayer.view.subviews ) {
@@ -579,6 +583,9 @@ static SJEdgeControlButtonItemTag SJTopItem_Back = 1;
     return NO;
 }
 
+- (BOOL)canPerformPlayForVideoPlayer:(__kindof SJBaseVideoPlayer *)videoPlayer {
+    return NO;
+}
 - (void)controlLayerNeedAppear:(__kindof SJBaseVideoPlayer *)videoPlayer { }
 - (void)controlLayerNeedDisappear:(__kindof SJBaseVideoPlayer *)videoPlayer { }
 @end

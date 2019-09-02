@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
     self = [super init];
     if ( !self )
         return nil;
-    [(id)manager sj_addObserver:self forKeyPath:@"state"];
+    [(id)manager sj_addObserver:self forKeyPath:@"transitioning"];
     return self;
 }
 
@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
         return;
     
     id<SJFitOnScreenManager> mgr = object;
-    if ( mgr.state == SJFitOnScreenStateStart ) {
+    if ( mgr.isTransitioning ) {
         if ( _fitOnScreenWillBeginExeBlock )
             _fitOnScreenWillBeginExeBlock(mgr);
     }
@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 
 @interface SJFitOnScreenManager ()
-@property (nonatomic) SJFitOnScreenState state;
+@property (nonatomic, getter=isTransitioning) BOOL transitioning;
 @property (nonatomic) BOOL innerFitOnScreen;
 @property (nonatomic, strong, readonly) UIView *target;
 @property (nonatomic, strong, readonly) UIView *superview;
@@ -63,7 +63,6 @@ NS_ASSUME_NONNULL_BEGIN
     _target = target;
     _superview = superview;
     _duration = 0.4;
-    _state = SJFitOnScreenStateEnd;
     return self;
 }
 
@@ -81,13 +80,13 @@ NS_ASSUME_NONNULL_BEGIN
     [self setFitOnScreen:fitOnScreen animated:animated completionHandler:nil];
 }
 - (void)setFitOnScreen:(BOOL)fitOnScreen animated:(BOOL)animated completionHandler:(nullable void (^)(id<SJFitOnScreenManager>))completionHandler {
-    if ( fitOnScreen == self.isFitOnScreen ) { return; }
+    if ( fitOnScreen == self.isFitOnScreen ) { if ( completionHandler ) completionHandler(self); return; }
     __weak typeof(self) _self = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong typeof(_self) self = _self;
         if ( !self ) return;
         self.innerFitOnScreen = fitOnScreen;
-        self.state = SJFitOnScreenStateStart;
+        self.transitioning = YES;
         
         UIWindow *window = [UIApplication sharedApplication].keyWindow;
         if ( !window ) return;
@@ -115,7 +114,7 @@ NS_ASSUME_NONNULL_BEGIN
                 self.target.frame = self.superview.bounds;
             }
             
-            self.state = SJFitOnScreenStateEnd;
+            self.transitioning = NO;
 
             if ( completionHandler )
                 completionHandler(self);
@@ -127,12 +126,6 @@ NS_ASSUME_NONNULL_BEGIN
     if ( innerFitOnScreen == _innerFitOnScreen )
         return;
     _innerFitOnScreen = innerFitOnScreen;
-}
-
-- (void)setState:(SJFitOnScreenState)state {
-    if ( state == _state )
-        return;
-    _state = state;
 }
 @end
 NS_ASSUME_NONNULL_END

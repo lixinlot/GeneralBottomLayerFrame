@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0930"
+   LastUpgradeVersion = "1100"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,10 +14,10 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "7F7A47A04071E9C461756FB222E8FF8B"
+               BlueprintIdentifier = "4EE958CD28D774381C5FB4F1281C4A49"
+               BuildableName = "libXHLaunchAd.a"
                BlueprintName = "XHLaunchAd"
-               ReferencedContainer = "container:Pods.xcodeproj"
-               BuildableName = "libXHLaunchAd.a">
+               ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>

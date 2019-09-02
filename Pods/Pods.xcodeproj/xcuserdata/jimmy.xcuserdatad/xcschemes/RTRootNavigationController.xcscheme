@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "0930"
+   LastUpgradeVersion = "1100"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,10 +14,10 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A8D81A1CFF3FF29F6DDAADC1A603520E"
+               BlueprintIdentifier = "4E0A478BA545855D88DD3EEB827121FB"
+               BuildableName = "libRTRootNavigationController.a"
                BlueprintName = "RTRootNavigationController"
-               ReferencedContainer = "container:Pods.xcodeproj"
-               BuildableName = "libRTRootNavigationController.a">
+               ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>

@@ -53,6 +53,25 @@ NS_ASSUME_NONNULL_BEGIN
     }
 }
 
+- (SJEdgeControlButtonItem *_Nullable)itemAtIndex:(NSUInteger)index {
+    if ( index >= _items.count )
+        return nil;
+    return _items[index];
+}
+
+- (SJEdgeControlButtonItem *_Nullable)itemAtPoint:(CGPoint)point {
+    for ( int i = 0 ; i < _layoutAttributes.count ; ++ i ) {
+        UICollectionViewLayoutAttributes *atr = _layoutAttributes[i];
+        SJEdgeControlButtonItem *_Nullable item = [self itemAtIndex:i];
+        if ( item != nil ) {
+            if ( !item.isHidden && CGRectContainsPoint(atr.frame, point) ) {
+                return item;
+            }
+        }
+    }
+    return nil;
+}
+
 - (void)_prepareLayout_Horizontal {
     if ( CGSizeEqualToSize(self.collectionView.bounds.size, CGSizeZero) ) {
         return;
@@ -242,6 +261,27 @@ NS_ASSUME_NONNULL_BEGIN
 }
 @end
 
+@interface _SJCollectionView : UICollectionView
+
+@end
+
+@implementation _SJCollectionView
+- (BOOL)pointInside:(CGPoint)point withEvent:(nullable UIEvent *)event {
+    SJCollectionViewLayout *layout = (id)self.collectionViewLayout;
+    SJEdgeControlButtonItem *_Nullable item = [layout itemAtPoint:point];    
+    if ( item == nil )
+        return NO;
+    
+    if ( item.isHidden == YES )
+        return NO;
+    
+    if ( item.customView == nil && item.target == nil )
+        return NO;
+    
+    return [super pointInside:point withEvent:event];
+}
+@end
+
 @interface SJEdgeControlLayerItemAdapter ()<UICollectionViewDelegate, UICollectionViewDataSource>
 @property (nonatomic, strong, readonly) NSMutableArray<SJEdgeControlButtonItem *> *itemsM;
 @property (nonatomic, strong, readonly) UICollectionView *collectionView;
@@ -258,7 +298,7 @@ NS_ASSUME_NONNULL_BEGIN
     
     _layout = [SJCollectionViewLayout new];
     _layout.layoutType = layoutType;
-    _collectionView = [[UICollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:_layout];
+    _collectionView = [[_SJCollectionView alloc] initWithFrame:CGRectZero collectionViewLayout:_layout];
     [SJEdgeControlButtonItemCell registerWithCollectionView:_collectionView];
     _collectionView.dataSource = self;
     _collectionView.delegate = self;
@@ -294,9 +334,19 @@ NS_ASSUME_NONNULL_BEGIN
 - (NSInteger)numberOfItems {
     return _itemsM.count;
 }
+- (void)setLayoutType:(SJAdapterItemsLayoutType)layoutType {
+    _layout.layoutType = layoutType;
+}
+- (SJAdapterItemsLayoutType)layoutType {
+    return _layout.layoutType;
+}
 - (void)addItem:(SJEdgeControlButtonItem *)item {
     if ( !item ) return;
     [_itemsM addObject:item];
+}
+- (void)addItemsFromArray:(NSArray<SJEdgeControlButtonItem *> *)items {
+    if ( !items ) return;
+    [_itemsM addObjectsFromArray:items];
 }
 - (void)insertItem:(SJEdgeControlButtonItem *)item atIndex:(NSInteger)index {
     if ( !item ) return;
@@ -318,6 +368,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)removeItemForTag:(SJEdgeControlButtonItemTag)tag {
     NSInteger idx = [self indexOfItemForTag:tag];
     [self removeItemAtIndex:idx];
+}
+- (void)removeAllItems {
+    [_itemsM removeAllObjects];
 }
 - (nullable SJEdgeControlButtonItem *)itemAtIndex:(NSInteger)index {
     if ( index >= self.numberOfItems ) return nil;
@@ -396,6 +449,13 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)collectionView:(UICollectionView *)collectionView willDisplayCell:(SJEdgeControlButtonItemCell *)cell forItemAtIndexPath:(NSIndexPath *)indexPath {
     SJEdgeControlButtonItem *item = _itemsM[indexPath.item];
     cell.item = item;
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
+    SJEdgeControlButtonItem *item = _itemsM[indexPath.item];
+    if ( item.isHidden )
+        return;
+    [item performAction];
 }
 @end
 NS_ASSUME_NONNULL_END

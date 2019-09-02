@@ -52,10 +52,23 @@ NS_ASSUME_NONNULL_BEGIN
     
     NSString *hashstr = [NSString stringWithFormat:@"%lu-%@", (unsigned long)[observer hash], keyPath];
     
-    if ( [[self sj_observerhashSet] containsObject:hashstr] ) return;
-    else [[self sj_observerhashSet] addObject:hashstr];
+    static dispatch_semaphore_t lock = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        lock = dispatch_semaphore_create(1);
+    });
     
-    [self addObserver:observer forKeyPath:keyPath options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:context];
+    dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
+    NSMutableSet *set = [self sj_observerhashSet];
+    if ( [set containsObject:hashstr] ) {
+        dispatch_semaphore_signal(lock);
+        return;
+    }
+    
+    [set addObject:hashstr];
+    dispatch_semaphore_signal(lock);
+    
+    [self addObserver:observer forKeyPath:keyPath options:options context:context];
     
     __SJKVOAutoremove *helper = [__SJKVOAutoremove new];
     __SJKVOAutoremove *sub = [__SJKVOAutoremove new];
@@ -66,6 +79,15 @@ NS_ASSUME_NONNULL_BEGIN
     
     helper.factor = sub;
     sub.factor = helper;
+    
+    __weak typeof(self) _self = self;
+    [observer sj_addDeallocCallbackTask:^(id  _Nonnull obj) {
+        __strong typeof(_self) self = _self;
+        if ( !self ) return;
+        dispatch_semaphore_wait(lock, DISPATCH_TIME_FOREVER);
+        [set removeObject:hashstr];
+        dispatch_semaphore_signal(lock);
+    }];
     
     objc_setAssociatedObject(self, &helper->_key, helper, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     objc_setAssociatedObject(observer, &sub->_key, sub, OBJC_ASSOCIATION_RETAIN_NONATOMIC);

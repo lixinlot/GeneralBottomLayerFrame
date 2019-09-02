@@ -17,6 +17,9 @@ pod 'SJBaseVideoPlayer'
 # 如果网络不行安装不了, 可改成以下方式进行安装
 pod 'SJBaseVideoPlayer', :git => 'https://gitee.com/changsanjiang/SJBaseVideoPlayer.git'
 pod 'SJVideoPlayer', :git => 'https://gitee.com/changsanjiang/SJVideoPlayer.git'
+pod 'SJUIKit/AttributesFactory', :git => 'https://gitee.com/changsanjiang/SJUIKit.git'
+pod 'SJUIKit/ObserverHelper', :git => 'https://gitee.com/changsanjiang/SJUIKit.git'
+pod 'SJUIKit/Queues', :git => 'https://gitee.com/changsanjiang/SJUIKit.git'
 $ pod update --no-repo-update   (不要用 pod install 了, 用这个命令安装)
 ```
 - [Base Video Player](https://github.com/changsanjiang/SJBaseVideoPlayer)
@@ -24,12 +27,137 @@ $ pod update --no-repo-update   (不要用 pod install 了, 用这个命令安�
 ___
 
 ## Contact
-* Email: changsanjiang@gmail.com
-* QQGroup: 719616775 
+* Email: changsanjiang@gmail.com 
 ___
 
 ## License
 SJVideoPlayer is available under the MIT license. See the LICENSE file for more info.
+
+___
+
+## 最近更新
+
+* 适配 iOS 13.0.
+
+* v2.6.0 开始 旋转的配置已从播放器内部移出, 现在需开发者自己添加配置, 代码如下: 
+```Objective-C
+static BOOL _iPhone_shouldAutorotate(UIViewController *vc) {
+    NSString *class = NSStringFromClass(vc.class);
+    
+    // 禁止哪些控制器旋转.
+    // - 如果返回 NO, 则只旋转`播放器`.  
+    // - 如果返回 YES, 则`所有控制器`同`播放器`一起旋转.
+    //
+    // return NO;
+    
+    // - 为了避免控制器同播放器一起旋转, 此处禁止Demo中SJ前缀的控制器旋转.
+    if ( [class hasPrefix:@"SJ"] ) {
+        return NO;
+    }
+    
+    // 其余情况 return YES. 此时系统的播放器(如在网页播放全屏后)可以触发旋转.  
+    return YES;
+}
+
+@implementation UIViewController (RotationControl)
+/// 该控制器是否可以旋转
+- (BOOL)shouldAutorotate {
+    // 此处为设置 iPhone 哪些控制器可以旋转
+    if ( UIUserInterfaceIdiomPhone == UI_USER_INTERFACE_IDIOM() )
+        return _iPhone_shouldAutorotate(self);
+    
+    return NO;
+}
+
+/// 旋转支持的方向
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    // 此处为设置 iPhone 某个控制器旋转支持的方向
+    // - 请根据实际情况进行修改.
+    if ( UIUserInterfaceIdiomPhone == UI_USER_INTERFACE_IDIOM() ) {
+        // 如果self不支持旋转, 返回仅支持竖屏
+        if ( _iPhone_shouldAutorotate(self) == NO )
+            return UIInterfaceOrientationMaskPortrait;
+    }
+
+    return UIInterfaceOrientationMaskAllButUpsideDown;
+}
+
+@end
+
+
+@implementation UITabBarController (RotationControl)
+- (UIViewController *)sj_topViewController {
+    if ( self.selectedIndex == NSNotFound )
+        return self.viewControllers.firstObject;
+    return self.selectedViewController;
+}
+
+- (BOOL)shouldAutorotate {
+    return [[self sj_topViewController] shouldAutorotate];
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return [[self sj_topViewController] supportedInterfaceOrientations];
+}
+
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation {
+    return [[self sj_topViewController] preferredInterfaceOrientationForPresentation];
+}
+@end
+
+@implementation UINavigationController (RotationControl)
+- (BOOL)shouldAutorotate {
+    return self.topViewController.shouldAutorotate;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return self.topViewController.supportedInterfaceOrientations;
+}
+
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation {
+    return self.topViewController.preferredInterfaceOrientationForPresentation;
+}
+
+- (nullable UIViewController *)childViewControllerForStatusBarStyle {
+    return self.topViewController;
+}
+
+- (nullable UIViewController *)childViewControllerForStatusBarHidden {
+    return self.topViewController;
+}
+@end
+```
+
+* 新增 切换清晰度的控制层. 开启如下:
+```Objective-C
+    SJVideoPlayerURLAsset *asset1 = [[SJVideoPlayerURLAsset alloc] initWithURL:VideoURL_Level4];
+    asset1.definition_fullName = @"超清 1080P";
+    asset1.definition_lastName = @"超清";
+    
+    SJVideoPlayerURLAsset *asset2 = [[SJVideoPlayerURLAsset alloc] initWithURL:VideoURL_Level3];
+    asset2.definition_fullName = @"高清 720P";
+    asset2.definition_lastName = @"AAAAAAA";
+    
+    SJVideoPlayerURLAsset *asset3 = [[SJVideoPlayerURLAsset alloc] initWithURL:VideoURL_Level2];
+    asset3.definition_fullName = @"清晰 480P";
+    asset3.definition_lastName = @"480P";
+    _player.definitionURLAssets = @[asset1, asset2, asset3];
+    
+    // 先播放asset1. (asset2 和 asset3 将会在用户选择后进行切换)
+    _player.URLAsset = asset1;
+```
+
+* 新增 左右边缘快进快退. 开启如下:
+```Objective-C
+    // 开启左右边缘快进快退. 如需进行更多配置, 请查看`fastForwardViewController`
+    _player.fastForwardViewController.enabled = YES;
+```
+
+* 新增 小浮窗播放. 开启如下:
+```Objective-C
+    // 开启小浮窗. 如需进行更多配置, 请查看`floatSmallViewController`
+    _player.floatSmallViewController.enabled = YES;
+```
 
 ___
 
@@ -97,9 +225,8 @@ ___
 * [6.5 是否全屏](#6.5)
 * [6.6 是否正在旋转](#6.6)
 * [6.7 当前旋转的方向 ](#6.7)
-* [6.8 旋转开始和结束的回调](#6.8)
-* [6.9 使 ViewController 一起旋转](#6.9)
-* [6.10 自己动手撸一个 SJRotationManager, 替换作者原始实现](#6.1)
+* [6.8 旋转开始和结束的回调](#6.8) 
+* [6.9 自己动手撸一个 SJRotationManager, 替换作者原始实现](#6.9)
 
 #### [7. 直接全屏而不旋转](#7)
 * [7.1 全屏和恢复](#7.1)
@@ -411,7 +538,7 @@ _player.URLAsset.specifyStartTime = secs;
 ```Objective-C
 /// otherAsset即为上一个页面播放的Asset
 /// 除了需要一个otherAsset, 其他方面同以上的示例一模一样
-_player.URLAsset = [SJVideoPlayerURLAsset initWithOtherAsset:otherAsset playModel:playModel]; 
+_player.URLAsset = [[SJVideoPlayerURLAsset alloc] initWithOtherAsset:otherAsset playModel:playModel]; 
 ```
 
 <h3 id="2.5">2.5 销毁时的回调. 可在此时做一些记录工作, 如播放位置</h3>
@@ -954,45 +1081,9 @@ _observer.rotationDidEndExeBlock = ^(id<SJRotationManagerProtocol>  _Nonnull mgr
 };
 ```
 
-<h3 id ="6.9">6.9 使 ViewController 一起旋转</h3>
+<h3 id ="6.9">6.9 自己动手撸一个 SJRotationManager, 替换作者原始实现</h3>
 
-<p>
-默认情况下, _player.rotationManager 使用的是 SJRotationManager 的实例. 它只会旋转播放器视图. 
-
-当我们需要 ViewController 也一起旋转时, 需要切换 旋转管理类为 SJVCRotationManager. 如下: 
-</p>
-
-```Objective-C
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    _player.rotationManager = [[SJVCRotationManager alloc] initWithViewController:vc];
-}
-
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator {
-    SJVCRotationManager *mgr = _player.rotationManager;
-    [mgr vc_viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-}
-
-- (BOOL)shouldAutorotate {
-    SJVCRotationManager *mgr = _player.rotationManager;
-    return [mgr vc_shouldAutorotate];
-}
-
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    SJVCRotationManager *mgr = _player.rotationManager;
-    return [mgr vc_supportedInterfaceOrientations];
-}
-
-- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation {
-    SJVCRotationManager *mgr = _player.rotationManager;
-    return [mgr vc_preferredInterfaceOrientationForPresentation];
-}
-```
-
-<h3 id ="6.10">6.10 自己动手撸一个 SJRotationManager, 替换作者原始实现</h3>
-
-正如使用 [6.9 使 ViewController 一起旋转](#6.9) 中使用 SJVCRotationManager 替换 SJRotationManager 一样, 当你想替换原始实现时, 可以实现 SJRotationManagerProtocol 中定义的方法.
+当你想替换原始实现时, 可以实现 SJRotationManagerProtocol 中定义的方法.
 
 ___
 
@@ -1382,7 +1473,7 @@ ___
     if ( _tmpShowStatusBar ) return NO;         // 临时显示
     if ( _tmpHiddenStatusBar ) return YES;      // 临时隐藏
     if ( self.lockedScreen ) return YES;        // 锁屏时, 不显示
-    if ( self.rotationManager.transitioning ) { // 旋转时, 不显示
+    if ( self.rotationManager.isTransitioning ) { // 旋转时, 不显示
         if ( !self.disabledControlLayerAppearManager && self.controlLayerIsAppeared ) return NO;
         return YES;
     }
